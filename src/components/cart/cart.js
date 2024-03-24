@@ -16,7 +16,7 @@ const Cart = () => {
       setCart(selectedPizza.data);
       console.log(selectedPizza.data);
       // Initialize pizzaOrders with default size and quantity
-      setPizzaOrders(selectedPizza.data.map(() => ({ size: 'small', quantity: 1 })));
+      setPizzaOrders(selectedPizza.data.map(() => ({ quantity: 1 })));
     } catch (error) {
       console.error('Error fetching selected pizza:', error);
     }
@@ -36,47 +36,76 @@ const Cart = () => {
     }
   };
 
-  const checkout = async () => {
+  const checkout = async (e) => {
+    const amount = getTotal() * 100;
+    const currency = "INR";
+    const receipt = "order_rcpt_11";
+  
     try {
-      const { data: { key } } = await axios.get('http://localhost:3001/api/checkout/key');
-      const { data: { order } } = await axios.post('http://localhost:3001/api/checkout', { cart, key });
-
+      const data = await axios.post(
+        "http://localhost:3001/api/checkout",
+        {
+          amount,
+          currency,
+          receipt,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      const order = data.data; // Access the data directly, no need for .json()
       const options = {
-        key,
-        amount: order.amount,
+        key: "rzp_test_ss9ru9xLtWR5ak",
+        amount: getTotal() * 100,
         currency: "INR",
         name: "Ayushi Narang",
         description: "Test Transaction",
         image: "https://example.com/your_logo",
         order_id: order.id,
-        callback_url: `http://localhost:3001/api/checkout/paymentVerification/${userId}`,
+        handler: async function (response) {
+          console.log(response);
+  
+          const body = { ...response };
+          console.log(userId)
+  
+          try {
+            const validationResult = await axios.post(
+              ('http://localhost:3001/api/verifyorder/' + userId),
+              body
+            );
+  
+            console.log("Payment Success:", validationResult.data);
+            navigate("/");
+          } catch (error) {
+            console.error("Error during verification:", error);
+          }
+        },
         prefill: {
-          name: "Ayushi Narang",
+          name: "akeja",
           email: "ayushinarang21@gmail.com",
-          contact: "8053225445"
+          contact: "8053225445",
         },
         notes: {
-          address: "Pizzadoe Office"
+          address: "Pizzadoe Office",
         },
         theme: {
-          color: "#3399cc"
-        }
-      }
-
-      const razor = new window.Razorpay(options);
-
-      razor.open();
-
-      razor.on('payment.success', async (response) => {
-        console.log('Payment Success:', response);
-        // Redirect to success page
-       navigate('/checkout');
-
-      });
+          color: "#3399cc",
+        },
+      };
+  
+      console.log(data);
+  
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      e.preventDefault();
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error("Error during checkout:", error);
     }
-  }
+  };
+  
 
 
   const removeItemFromCart = async (itemId) => {
@@ -102,14 +131,6 @@ const Cart = () => {
     fetchCart();
   }, []);
 
-  const handleSizeChange = (index, newSize) => {
-    setPizzaOrders(prevOrders => {
-      const newOrders = [...prevOrders];
-      newOrders[index].size = newSize;
-      return newOrders;
-    });
-  };
-
   const handleQuantityChange = (index, newQuantity) => {
     setPizzaOrders(prevOrders => {
       const newOrders = [...prevOrders];
@@ -134,16 +155,7 @@ const Cart = () => {
               <div className="w-100 m-1">
                 <div className='w-1/2'>
                   <p>Sizes</p>
-                  <select
-                    className="form-select"
-                    value={pizzaOrders[index].size}
-                    onChange={(e) => handleSizeChange(index, e.target.value)}
-                    aria-label="Default select example"
-                  >
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
-                  </select>
+                   {item.size}
                 </div>
                 <div className='w-1/2'>
                   <p>Quantity</p>

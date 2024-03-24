@@ -8,7 +8,7 @@ import Product from './components/product/product';
 import Cart from './components/cart/cart';
 import ProductList from './components/product/productList';
 import Profile from './components/profile/profile'
-import Order from './components/checkout/checkout';
+import UserOrders from './components/checkout/checkout';
 import ForgotPassword from './components/forgotpass/ForgotPassword';
 import Verification from './components/auth/verify'
 import ResetPassword from './components/forgotpass/ResetPassword'
@@ -27,7 +27,7 @@ function App() {
           <Route path='/product' element = {<Product />} />
           <Route path='/product/:id' element = {<Product />} />
           <Route path='/profile' element = {<Profile />} />
-          <Route path='/order' element = {<Order/>} />
+          <Route path='/order' element = {<UserOrders/>} />
           <Route path='/forgotPassword' element={<ForgotPassword />} />
           <Route path='/verify' element={<Verification />} />
           <Route path='/resetPassword' element={<ResetPassword />} />

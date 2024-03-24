@@ -25,7 +25,7 @@ function Home() {
       try {
         const pizzasData = await getAllPizzas();
         setPizzas(pizzasData);
-        setPizzaOrders(pizzasData.map(() => ({ size: 'small', quantity: 1 })));
+        setPizzaOrders(pizzasData.map(() => ({ quantity: 1 })));
       } catch (error) {
         console.error('Error fetching pizzas:', error);
       }
@@ -33,29 +33,22 @@ function Home() {
     fetchData();
   }, []);
 
-  const handleSizeChange = (index, newSize) => {
-    setPizzaOrders(prevOrders => {
-      const newOrders = [...prevOrders];
-      newOrders[index].size = newSize;
-      return newOrders;
-    });
-  };
-
   const handleQuantityChange = (index, newQuantity) => {
     setPizzaOrders(prevOrders => {
       const newOrders = [...prevOrders];
-      newOrders[index].quantity = newQuantity;
+      if (newOrders[index]) {
+        newOrders[index].quantity = newQuantity;
+      }
       return newOrders;
     });
   };
-
+  
   const closeModal = () => {
     setSelectedPizzaIndex(null);
   };
 
   const addToCart = (selectedFood, index) => {
     if (selectedFood) {
-      const { size, quantity } = pizzaOrders[index];
       const currentTime = new Date();
       const cartItem = {
         id: selectedFood._id,
@@ -66,8 +59,7 @@ function Home() {
         veggies: selectedFood.veggies,
         cheeses: selectedFood.cheeses,
         price: selectedFood.price,
-        count: quantity,
-        size: size,
+        size: selectedFood.size,
         img: selectedFood.image_url,
         timeAdded: currentTime.toLocaleString(),
       };
@@ -143,16 +135,7 @@ function Home() {
               <div className="w-100 m-1">
                 <div className='w-1/2'>
                   <p>Sizes</p>
-                  <select
-                    className="form-select"
-                    value={pizzaOrders[index].size}
-                    onChange={(e) => handleSizeChange(index, e.target.value)}
-                    aria-label="Default select example"
-                  >
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
-                  </select>
+                    {pizza.size}
                 </div>
 
                 <div className='w-1/2'>

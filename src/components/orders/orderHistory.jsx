@@ -1,43 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getOrderByUserIdAsync, resetOrderFetchStatus, selectOrderFetchStatus, selectOrders } from './orderSlice';
+import { toast } from 'react-toastify';
 
-function OrderHistory() {
-  const [orders, setOrders] = useState([]);
-  const userId = localStorage.getItem('userID');
+export const UserOrders = () => {
+  const dispatch = useDispatch();
+  const orders = useSelector(selectOrders);
+  const orderFetchStatus = useSelector(selectOrderFetchStatus);
 
   useEffect(() => {
-    // Fetch order history from backend API
-    const fetchOrderHistory = async () => {
-      try {
-        const response = await fetch(`/api/orders/${userId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch order history');
-        }
-        const data = await response.json();
-        setOrders(data);
-      } catch (error) {
-        console.error('Error fetching order history:', error);
-      }
-    };
+    dispatch(getOrderByUserIdAsync());
+  }, [dispatch]);
 
-    fetchOrderHistory();
-  }, [userId]); // Include userId in the dependency array to fetch orders when userId changes
+  useEffect(() => {
+    if (orderFetchStatus === 'rejected') {
+      toast.error('Error fetching orders, please try again later');
+    }
+  }, [orderFetchStatus]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetOrderFetchStatus());
+    };
+  }, [dispatch]);
 
   return (
     <div>
-      <h2>Order History</h2>
-      <ul>
-        {orders.map(order => (
-          <li key={order._id}>
-            <p>Order ID: {order._id}</p>
-                <p>Date: {order.date}</p>
-                <p>Total: ${order.total}</p>
-
-
-          </li>
-        ))}
-      </ul>
+      {orderFetchStatus === 'pending' ? (
+        <div>
+          <p>Loading...</p>
+        </div>
+      ) : (
+        <div>
+          <h4>Order History</h4>
+          <p>Check the status of the recent orders</p>
+          {orders &&
+            orders.map((order) => (
+              <div key={order._id}>
+                <p>Order Number: {order._id}</p>
+                <p>Date of placed: {new Date(order.createdAt).toDateString()}</p>
+                <p>Total Amount: ${order.total}</p>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
-}
-
-export default OrderHistory;
+};
