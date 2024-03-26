@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { UseSelector,useDispatch, useSelector } from 'react-redux';
+import {verifyOtpAsync,selectOtpVerificationStatus} from './AuthSlice'
 
 const Verification = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch()
+    const  verificationStatus = useSelector(selectOtpVerificationStatus)
+
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationError, setVerificationError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      // Make a request to the backend to verify the verification code
-      const response = await axios.post(`http://localhost:3001/api/verify/${verificationCode}`);
-      console.log(response.data); // Handle successful verification response
-      navigate('/login')
-    } catch (error) {
-      console.error('Error during verification:', error);
-      setVerificationError('Verification failed. Please check your code and try again.');
-    }
+     dispatch(verifyOtpAsync(verificationCode))
   };
+
+  useEffect(() => {
+    if (verificationStatus === 'fulfilled') {
+      navigate('/login');
+    }
+  }, [verificationStatus, navigate]);
 
   return (
     <div>
@@ -33,8 +35,9 @@ const Verification = () => {
           value={verificationCode}
           onChange={(e) => setVerificationCode(e.target.value)}
         />
-
-        <button type="submit">Verify</button>
+        <button type="submit" disabled={verificationStatus === 'pending'}>
+          {verificationStatus === 'pending' ? 'Verifying...' : 'Verify'}
+        </button>
       </form>
       {verificationError && <p>{verificationError}</p>}
     </div>

@@ -3,10 +3,17 @@ import axios from 'axios';
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from 'react-toastify'
+import { useSelector,useDispatch } from 'react-redux';
+import { selectForgotPasswordError,selectForgotPasswordSuccessMessage,selectForgotPasswordStatus, forgotPasswordAsync } from '../auth/AuthSlice';
+
+
 
 const ForgotPassword = () => {
   const [showModal, setShowModal] = useState(false);
   const [notAUser, setNotAUser] = useState(false);
+  const dispatch = useDispatch();
+  const forgotPasswordStatus = useSelector(selectForgotPasswordStatus);
+
 
   const formik = useFormik({
     initialValues: {
@@ -16,22 +23,17 @@ const ForgotPassword = () => {
       email: Yup.string().email("Invalid email address").required("Required"),
     }),
     onSubmit: async (values) => {
-      try {
-        const response = await axios.post("http://localhost:3001/api/forgotPassword", values);
-        if (response.status === 200) {
-          setShowModal(true);
-        } else {
-          toast.error("Server error");
-        }
-      } catch (error) {
-        if (error.response.status === 404) {
-          setNotAUser(true);
-        } else {
-          toast.error("Server error");
-        }
-      }
+      dispatch(forgotPasswordAsync(values));
     },
   });
+
+  React.useEffect(() => {
+    if (forgotPasswordStatus === 'fulfilled') {
+      setShowModal(true);
+    } else if (forgotPasswordStatus === 'rejected') {
+      setNotAUser(true);
+    }
+  }, [forgotPasswordStatus]);
 
   return (
     <div className="custom-body">
@@ -50,7 +52,9 @@ const ForgotPassword = () => {
           {formik.touched.email && formik.errors.email ? (
             <div>{formik.errors.email}</div>
           ) : null}
-          <button type="submit">Submit</button>
+          <button type="submit" disabled={forgotPasswordStatus === 'pending'}>
+            {forgotPasswordStatus === 'pending' ? 'Submitting...' : 'Submit'}
+          </button>
         </form>
       </div>
       {notAUser && (

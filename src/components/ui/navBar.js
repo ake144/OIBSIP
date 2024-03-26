@@ -1,38 +1,28 @@
-import React, { useState, useEffect } from "react";
+
+
 import axios from "axios";
 import { HiOutlineShoppingCart } from "react-icons/hi";
 import { CgProfile } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { fetchCartByUserIdAsync, selectCartItems } from "./../cart/cartSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect,useState } from "react";
+import { selectLoggedInUser } from "../auth/AuthSlice";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const loggedInUser = useSelector(selectLoggedInUser)
   const [cartItemsCount, setCartItemsCount] = useState(0);
   const [user, setUser] = useState(null);
   const userId = localStorage.getItem("userID");
+  const cartItems = useSelector(selectCartItems);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/api/getuser/" + userId)
-      .then((res) => {
-        setUser(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-
-    // Fetch cart items count
-    axios
-      .get("http://localhost:3001/api/getCartItemsCount/" + userId)
-      .then((res) => {
-        console.log(res);
-        setCartItemsCount(res.data.cartItemsCount);
-        console.log(res.data.cartItemsCount);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, [userId]); // Add userId to dependency array to re-fetch count when user changes
+    dispatch(fetchCartByUserIdAsync(userId));
+    console.log(loggedInUser)
+  }, [userId, dispatch]);
 
   const handleSignupClick = () => {
     navigate("/signup");
@@ -41,92 +31,98 @@ export default function Navbar() {
   const handleLogOut = () => {
     localStorage.removeItem("userID");
     setUser(null);
-    navigate('/')
+    navigate("/");
   };
 
+  const handleCart= ()=>{
+    navigate("/cart")
+  }
+  
+
   return (
-    <nav className="bg-gray-800">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
-          <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-            >
-              <span className="sr-only  text-white">Open main menu</span>
+    <div className="navbar bg-base-100">
+      <div className="flex-1  m-1 p-0">
+        <a href="/">
+        <img src="/akeja.png" className="h-14 w-18 mx-4" alt="logo" />
+        </a>
+      </div>
+      <div className="flex-none">
+        <div className="dropdown dropdown-end">
+          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+            <div className="indicator">
               <svg
-                className="block h-6 w-6"
                 xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.5"
                 stroke="currentColor"
-                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></path>
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
               </svg>
-            </button>
-          </div>
-          <div className="flex items-center justify-between w-full">
-            <div>
-              <img src="/akeja.png" className="h-12 w-12" alt="logo" />
+              <span className="badge badge-sm indicator-item">{cartItems.length > 0 ? cartItems.length : 0 }</span>
             </div>
-            <nav className="hidden md:flex space-x-4">
-              <Link to="#" className="text-white hover:text-gray-300">
-                About
-              </Link>
-              <Link to="#" className="text-white hover:text-gray-300">
-                Market
-              </Link>
-              <Link to="#" className="text-white hover:text-gray-300">
-                Restaurants
-              </Link>
-              <Link to="#" className="text-white hover:text-gray-300">
-                Drinks
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link to="/cart" className="text-white">
-                <HiOutlineShoppingCart className="h-8 w-8" />
-                {cartItemsCount > 0 && (
-                  <span className="absolute  -top-1 w-5  bg-red-500 text-white rounded-full px-5 py-1 text-xs">
-                    {cartItemsCount}
-                  </span>
-                )}
-              </Link>
-              {user ? (
-                <div>
-                  <Link to="/profile" className="text-white">
-                    <CgProfile className="h-8 w-8" />
-                  </Link>
-                </div>
-              ) : (
-                <div>
-                  <Link
-                    to={handleSignupClick}
-                    className="text-white border border-white px-4 py-2 rounded-lg hover:bg-white hover:text-gray-800 transition duration-300"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-              <button
-                onClick={handleLogOut}
-                className="text-white border border-white px-4 py-2 rounded-lg hover:bg-white hover:text-gray-800 transition duration-300"
-              >
-                Log Out
-              </button>
+          </div>
+          <div
+            tabIndex={0}
+            className="mt-3 z-[1] card card-compact dropdown-content w-52 bg-base-100 shadow"
+          >
+            <div className="card-body">
+              <span className="font-bold text-lg">{cartItems.length > 0 ? cartItems.length : 0 } Items</span>
+              <span className="text-info">Subtotal: $$</span>
+              <div className="card-actions">
+                <button className="btn btn-primary btn-block"  onClick={handleCart}>View cart</button>
+              </div>
             </div>
           </div>
         </div>
+        {loggedInUser ? (
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar"
+            >
+              <div className="w-10 rounded-full">
+                <img
+                  alt="Tailwind CSS Navbar component"
+                  src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+                />
+              </div>
+            </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+            >
+              <li>
+                <Link to={"/profile"} className="justify-between">
+                  Profile
+                  <span className="badge">New</span>
+                </Link>
+              </li>
+              <li>
+                <a>Settings</a>
+              </li>
+              <li>
+                <a href={handleLogOut}>Logout</a>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          <div className="justify-center items-center text-white">
+            <button onClick={handleSignupClick}>Sign Up</button>
+          </div>
+        )}
       </div>
-    </nav>
+    </div>
   );
 }
+
+
+
+
+

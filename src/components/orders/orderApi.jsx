@@ -5,7 +5,7 @@ import { axiosi } from '../config/axios'
 
 export const createOrder = async(order)=>{
       try{
-        const res = await axiosi.post('/order',order)
+        const res = await axiosi.post('/orders',order)
         return res.data
       }
       catch(err){
@@ -25,7 +25,7 @@ export const getAllOrder=async()=>{
 
 export const getOrderByUserId=async(id)=>{
         try{
-            const res = await axiosi.get(`/orders/user/${id}`)
+            const res = await axiosi.get(`/orders/${id}`)
             return res.data
     }
     catch(err){

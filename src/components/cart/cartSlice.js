@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import {addToCart,fetchCartByUserId,deleteCartItemById} from './CartApi'
+import {addToCart,fetchCartByUserId,deleteCartByUserId } from './CartApi'
 
 const initiateState = {
     status:'idle',
@@ -11,8 +11,8 @@ const initiateState = {
     successMessage:null
 }
 
-export const addToCartAsync = createAsyncThunk('cart/addToCartAsync',async(item)=>{
-     const  addedItem = await addToCart(item)
+export const addToCartAsync = createAsyncThunk('cart/addToCartAsync',async ({ userId, item })=>{
+     const  addedItem = await addToCart(userId,{ ...item, quantity: 1 })
      return addedItem
 })
 export const fetchCartByUserIdAsync=createAsyncThunk('/cart/fetchCartByUserIdAsync',async(id)=>{
@@ -20,8 +20,8 @@ export const fetchCartByUserIdAsync=createAsyncThunk('/cart/fetchCartByUserIdAsy
     return items
 })
 
-export const deleteCartItemByIdAsync= createAsyncThunk('/cart/deleteCartItemByIdAsync',async(id)=>{
-      const deletedItem  = await deleteCartItemById(id)
+export const deleteCartItemByIdAsync= createAsyncThunk('/cart/deleteCartItemByIdAsync',async({ userId, itemId })=>{
+      const deletedItem  = await deleteCartByUserId(userId,itemId)
       return deletedItem
 })
 
@@ -29,9 +29,21 @@ const cartSlice = createSlice({
     name:'cartSlice',
     initialState:initiateState,
     reducers:{
-        
-        
-    },
+        increaseQuantity(state, action) {
+            const { itemId } = action.payload;
+            const item = state.items.find((item) => item._id === itemId);
+            if (item) {
+              item.quantity += 1;
+            }
+          },
+          decreaseQuantity(state, action) {
+            const { itemId } = action.payload;
+            const item = state.items.find((item) => item._id === itemId);
+            if (item && item.quantity > 1) {
+              item.quantity -= 1;
+            }
+          }
+        },
     extraReducers:(builder)=>{
         builder
             .addCase(addToCartAsync.pending,(state)=>{
@@ -73,11 +85,15 @@ const cartSlice = createSlice({
 
 })
 
-export const selectCartStatus=(state)=>state.CartSlice.status
-export const selectCartItems=(state)=>state.CartSlice.items
-export const selectCartErrors=(state)=>state.CartSlice.error
-export const selectCartSuccessMessage=(state)=>state.CartSlice.successMessage
-export const selectCartItemAddStatus=(state)=>state.CartSlice.cartItemAddStatus
-export const selectCartItemRemoveStatus=(state)=>state.CartSlice.cartItemRemoveStatus
+
+export const { increaseQuantity, decreaseQuantity } = cartSlice.actions;
+
+
+export const selectCartStatus=(state)=>state.cartSlice.status
+export const selectCartItems=(state)=>state.cartSlice.items
+export const selectCartErrors=(state)=>state.cartSlice.error
+export const selectCartSuccessMessage=(state)=>state.cartSlice.successMessage
+export const selectCartItemAddStatus=(state)=>state.cartSlice.cartItemAddStatus
+export const selectCartItemRemoveStatus=(state)=>state.cartSlice.cartItemRemoveStatus
 
 export default cartSlice.reducer

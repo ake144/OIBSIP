@@ -1,5 +1,5 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit'
-import { checkAuth, forgotPassword, login, logout, resendOtp, resetPassword, signup, verifyOtp } from './AuthApi'
+import { checkAuth, forgotPassword, login, logout, resendOtp,fetchUsers, resetPassword, signup, verifyOtp } from './AuthApi'
 
 const initialState={
     status:"idle",
@@ -14,6 +14,7 @@ const initialState={
     signupError:null,
     loginStatus:"idle",
     loginError:null,
+    users: [],
     loggedInUser:null,
     otpVerificationStatus:"idle",
     otpVerificationError:null,
@@ -38,8 +39,8 @@ export const loginAsync=createAsyncThunk('auth/loginAsync',async(cred)=>{
     return res
 })
 
-export const verifyOtpAsync=createAsyncThunk('auth/verifyOtpAsync',async(cred)=>{
-    const res=await verifyOtp(cred)
+export const verifyOtpAsync=createAsyncThunk('auth/verifyOtpAsync',async(verificationCode)=>{
+    const res=await verifyOtp(verificationCode)
     return res
 })
 
@@ -63,6 +64,10 @@ export const logoutAsync=createAsyncThunk("auth/logoutAsync",async()=>{
     return res
 })
 
+export const fetchUsersAsync=createAsyncThunk("auth/fetchUsersAsync",async()=>{
+    const res = await fetchUsers()
+    return res
+})
 
 const authSlice=createSlice({
     name:"authSlice",
@@ -203,29 +208,39 @@ const authSlice=createSlice({
                 state.errors=action.error
                 state.isAuthChecked=true
             })
-            
-    }
-})
+            .addCase(fetchUsersAsync.pending, (state) => {
+                state.status = 'loading';
+              })
+            .addCase(fetchUsersAsync.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.users = action.payload;
+              })
+            .addCase(fetchUsersAsync.rejected, (state, action) => {
+            state.status = 'failed';
+            state.error = action.error.message;
+            })
 
+    }})
 
 // exporting selectors
-export const selectAuthStatus=(state)=>state.AuthSlice.status
-export const selectAuthErrors=(state)=>state.AuthSlice.errors
-export const selectLoggedInUser=(state)=>state.AuthSlice.loggedInUser
-export const selectAuthSuccessMessage=(state)=>state.AuthSlice.successMessage
-export const selectIsAuthChecked=(state)=>state.AuthSlice.isAuthChecked
-export const selectSignupStatus=(state)=>state.AuthSlice.signupStatus
-export const selectSignupError=(state)=>state.AuthSlice.signupError
-export const selectLoginStatus=(state)=>state.AuthSlice.loginStatus
-export const selectLoginError=(state)=>state.AuthSlice.loginError
-export const selectOtpVerificationStatus=(state)=>state.AuthSlice.otpVerificationStatus
-export const selectOtpVerificationError=(state)=>state.AuthSlice.otpVerificationError
-export const selectForgotPasswordStatus=(state)=>state.AuthSlice.forgotPasswordStatus
-export const selectForgotPasswordSuccessMessage=(state)=>state.AuthSlice.forgotPasswordSuccessMessage
-export const selectForgotPasswordError=(state)=>state.AuthSlice.forgotPasswordError
-export const selectResetPasswordStatus=(state)=>state.AuthSlice.resetPasswordStatus
-export const selectResetPasswordSuccessMessage=(state)=>state.AuthSlice.resetPasswordSuccessMessage
-export const selectResetPasswordError=(state)=>state.AuthSlice.resetPasswordError
+export const selectAllUsers=(state)=>state.authSlice.users
+export const selectAuthStatus=(state)=>state.authSlice.status
+export const selectAuthErrors=(state)=>state.authSlice.errors
+export const selectLoggedInUser=(state)=>state.authSlice.loggedInUser
+export const selectAuthSuccessMessage=(state)=>state.authSlice.successMessage
+export const selectIsAuthChecked=(state)=>state.authSlice.isAuthChecked
+export const selectSignupStatus=(state)=>state.authSlice.signupStatus
+export const selectSignupError=(state)=>state.authSlice.signupError
+export const selectLoginStatus=(state)=>state.authSlice.loginStatus
+export const selectLoginError=(state)=>state.authSlice.loginError
+export const selectOtpVerificationStatus=(state)=>state.authSlice.otpVerificationStatus
+export const selectOtpVerificationError=(state)=>state.authSlice.otpVerificationError
+export const selectForgotPasswordStatus=(state)=>state.authSlice.forgotPasswordStatus
+export const selectForgotPasswordSuccessMessage=(state)=>state.authSlice.forgotPasswordSuccessMessage
+export const selectForgotPasswordError=(state)=>state.authSlice.forgotPasswordError
+export const selectResetPasswordStatus=(state)=>state.authSlice.resetPasswordStatus
+export const selectResetPasswordSuccessMessage=(state)=>state.authSlice.resetPasswordSuccessMessage
+export const selectResetPasswordError=(state)=>state.authSlice.resetPasswordError
 
 // exporting reducers
 export const {clearAuthSuccessMessage,clearAuthErrors,resetAuthStatus,clearSignupError,resetSignupStatus,clearLoginError,resetLoginStatus,clearOtpVerificationError,resetOtpVerificationStatus,clearForgotPasswordError,clearForgotPasswordSuccessMessage,resetForgotPasswordStatus,clearResetPasswordError,clearResetPasswordSuccessMessage,resetResetPasswordStatus}=authSlice.actions
