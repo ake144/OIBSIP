@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit'
 import { checkAuth, forgotPassword, login, logout, resendOtp,fetchUsers, resetPassword, signup, verifyOtp } from './AuthApi'
+import { json } from 'react-router-dom'
 
 const initialState={
     status:"idle",
@@ -31,11 +32,13 @@ const initialState={
 
 export const signupAsync=createAsyncThunk('auth/signupAsync',async(cred)=>{
     const res=await signup(cred)
+
     return res
 })
 
 export const loginAsync=createAsyncThunk('auth/loginAsync',async(cred)=>{
     const res=await login(cred)
+    localStorage.setItem('user',JSON.stringify(res))
     return res
 })
 

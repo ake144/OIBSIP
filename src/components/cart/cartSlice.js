@@ -20,8 +20,8 @@ export const fetchCartByUserIdAsync=createAsyncThunk('/cart/fetchCartByUserIdAsy
     return items
 })
 
-export const deleteCartItemByIdAsync= createAsyncThunk('/cart/deleteCartItemByIdAsync',async({ userId, itemId })=>{
-      const deletedItem  = await deleteCartByUserId(userId,itemId)
+export const deleteCartItemByIdAsync= createAsyncThunk('/cart/deleteCartItemByIdAsync',async({ userId, itemName })=>{
+      const deletedItem  = await deleteCartByUserId(userId,itemName)
       return deletedItem
 })
 

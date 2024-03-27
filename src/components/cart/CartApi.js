@@ -21,9 +21,9 @@ export const fetchCartByUserId=async(id)=>{
     }
 }
 
-export const deleteCartByUserId=async(userId,id)=>{
+export const deleteCartByUserId=async(userId,itemName)=>{
     try{
-    const res = await axiosi.delete(`/cart/${userId}/${id}`)
+    const res = await axiosi.delete(`/cart/${userId}/${itemName}`)
     return res.data
     }
     catch(error){
