@@ -2,6 +2,8 @@ import React, { useState,useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginAsync, selectLoginStatus, selectLoginError } from './AuthSlice';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,11 +23,16 @@ const Login = () => {
   // Handle login status change
 useEffect(() => {
   console.log("Login Status Changed:", loginStatus);
-    if (loginStatus === 'fullfilled') {
+    if (loginStatus === 'fulfilled') {
+      toast.success('successful logged in, Welcome To AkejaPizza');
       console.log("Redirecting to home page...");
       // Redirect to protected route upon successful login
       navigate('/');
     }
+    else if (loginStatus === 'rejected'){
+      toast.error('Wrong Password or Email, Please try again')
+    }
+    
   }, [loginStatus, navigate]);
 
 
@@ -35,7 +42,7 @@ useEffect(() => {
 
   return (
     <>
-      <div>Login</div>
+    <ToastContainer/>
       <div className="flex flex-col justify-center items-center">
         <form className="" onSubmit={handleSubmit}>
           <label htmlFor="email">Email:</label>
@@ -54,7 +61,6 @@ useEffect(() => {
         </form>
         {loginError && (
             <div className="justify-center items-center">
-              <p className="text-red-600">{loginError.message}</p> {/* Access message property */}
               <button className="bg-black text-white p-3 m-4 border-1" onClick={handleForgot}>
                 forgotPassword
               </button>

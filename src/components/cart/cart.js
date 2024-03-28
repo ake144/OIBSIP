@@ -31,10 +31,17 @@ const Cart = () => {
   }, [userId, dispatch]);
 
   const removeItemFromCart = async (userId, itemName) => {
-    dispatch(deleteCartItemByIdAsync({ userId, itemName }));
-    toast.success('Item removed from cart');
+    try {
+      await dispatch(deleteCartItemByIdAsync({ userId, itemName }));
+      toast.success('Item removed from cart');
+      // Optionally, you can fetch the updated cart after removing an item
+      dispatch(fetchCartByUserIdAsync(userId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      toast.error('Failed to remove item from cart');
+    }
   };
-
+  
   const checkout = async (e) => {
     // Checkout logic
   };
@@ -63,30 +70,31 @@ const Cart = () => {
         <HiArrowCircleLeft />
       </Link>
 
-      <h1 className="justify-center items-center text-2xl">Shopping Cart</h1>
+      <h1 className="text-3xl font-bold text-center mb-6 text-white">Shopping Cart</h1>
       <div
         id="#product"
-        className="flex flex-wrap justify-center items-center gap-7"
+        className="min-h-screen my-20 flex flex-col justify-center items-center py-8 sm:py-6 px-6 sm:px-8"
       >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-24">
         {user ? (
           cartItems && cartItems.length > 0 ? (
             cartItems.map((item, index) => (
               <div
                 key={index}
-                className="flex  flex-wrap  shadow-lg p-3 mb-5 bg-white rounded-lg mx-3 my-3 w-1/3"
+                className="bg-orange-100 rounded-xl shadow-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-500 ease-in-out"
               >
-                <h1 className="text-1xl font-bold p-5 m-5">{item.name}</h1>
+                <h1 className="text-lg font-bold text-black mb-1">{item.name}</h1>
                 <img
                   src={item.imageUrl}
-                  className="h-18 w-20 img-fluid"
+                  className="w-full h-36 object-cover"
                   alt={item.name}
                 />
                 <div className="">
                   <div className="w-100 m-1">
-                    <div className="w-1/2">
-                      <p>Sizes:{item.size}</p>
+                    <div className="w-1/2 text-black font-lg">
+                      <p >Sizes:{item.size}</p>
                     </div>
-                    <div className="w-1/2">
+                    <div className="w-1/2 text-black font-lg">
                       <p>Quantity:</p>
                       <div className="flex items-center">
                         <button
@@ -108,9 +116,10 @@ const Cart = () => {
                 </div>
                 <div className="flex flex-row">
                   <div className="w-100 m-1">
-                    <h1 className="mt-1 text-black">
-                      Price: {item.price * item.quantity}
-                    </h1>
+                      <p> <span className="text-xl font-bold text-orange-500">
+                                 ${item.price}
+                            </span>
+                    </p>
                   </div>
                   <div className="w-30 align-end items-end m-1">
                     <button
@@ -130,10 +139,11 @@ const Cart = () => {
           <h4>You don't have any item in the cart, please Login</h4>
         )}
       </div>
-      <div className="justify-center items-center flex flex-row">
-        {user?.cartItems && user?.cartItems.length > 0 && (
+      </div>
+      <div className="justify-center items-center mb-6 flex flex-row">
+        {cartItems && cartItems.length > 0 && (
           <>
-            <h2>Total: ${getTotalPrice()}</h2>
+            <h2  className='text-orange-500 mx-5'>Total: ${getTotalPrice()}</h2>
             <button onClick={checkout} className="btn btn-info">
               Checkout
             </button>
@@ -145,3 +155,10 @@ const Cart = () => {
 };
 
 export default Cart;
+
+
+
+
+
+
+

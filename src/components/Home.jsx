@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllPizzaAsync, selectGetItems, selectGetItemsStatus, selectGetError } from './product/productSlice';
-import { addToCartAsync,selectCartItemAddStatus } from './cart/cartSlice';
+import { addToCartAsync, selectCartItemAddStatus } from './cart/cartSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './ui/footer';
@@ -11,12 +11,16 @@ function Home() {
     const items = useSelector(selectGetItems);
     const status = useSelector(selectCartItemAddStatus);
     const error = useSelector(selectGetError);
-    // const [selectedPizzaIndex, setSelectedPizzaIndex] = useState(null);
-    const userId = localStorage.getItem('userID');
+    
+    const userString = localStorage.getItem("user");
+    const user = userString ? JSON.parse(userString) : null;
+    const userId = user ? user._id : null;
 
     useEffect(() => {
-        dispatch(fetchAllPizzaAsync());
-    }, [dispatch]);
+        if (userId) {
+            dispatch(fetchAllPizzaAsync());
+        }
+    }, [dispatch, userId]);
 
     if (status === "loading") {
         return <div>Loading...</div>;
@@ -47,14 +51,15 @@ function Home() {
       else if(status === "rejected"){
          showToastForCaseOne()
       }
-      else{
+      if(!user){
         showToastForCaseThree()
       }
   };
+
     return (
         <>
             <ToastContainer />
-            <div className="bg-cover bg-center h-screen" style={{ backgroundImage: `url('/pizza1.jpg')` }}>
+            <div className="bg-cover bg-center min-h-screen py-9 " style={{ backgroundImage: `url('/pizza1.jpg')` }}>
                 <div className="flex flex-col pt-12 items-center justify-center">
                     <h1 className="text-2xl gap-5 p-3 text-white">
                         We Have{' '}
@@ -66,50 +71,42 @@ function Home() {
                     </button>
                 </div>
             </div>
-
-            <h2 className='text-3xl justify-center items-center'>Trending Recipes</h2>
-            <div id='products' className='flex flex-wrap justify-center items-center gap-10'>
-                {items.map((pizza, index) => (
-                    <div key={index} className="shadow-lg p-3 mb-5 bg-white rounded-lg mx-3 my-3 w-1/3">
-                        <h1 className="text-1xl font-bold p-5 m-5">{pizza.name}</h1>
-                        <img
-                            src={pizza.imageUrl}
-                            className="h-25 w-1/2 img-fluid"
-                            alt={pizza.name}
-                        />
-                        <div className="flex flex-col">
-                            <div className="w-100 m-1">
-                                <div className='w-1/2'>
-                                    <p>Sizes:  {pizza.size} </p>
+            <div  id='products' className="min-h-screen my-20 flex flex-col justify-center items-center py-8 sm:py-6 px-6 sm:px-8">
+                <h2 className="text-3xl font-bold text-center mb-6 text-white">Trending Recipes</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-24">
+                    {items.map((pizza, index) => (
+                        <div key={index} className="bg-orange-100 rounded-xl shadow-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-500 ease-in-out">
+                            <img
+                                src={pizza.imageUrl}
+                                className="w-full h-36 object-cover"
+                                alt={pizza.name}
+                            />
+                            <div className="p-4">
+                                <h3 className="text-lg font-bold text-black mb-1">
+                                    {pizza.name}
+                                </h3>
+                                <p className="text-sm text-gray-700 mb-2">{pizza.description}</p>
+                                <div className="flex justify-between items-center w-full">
+                                    <span className="text-xl font-bold text-orange-500">
+                                        ${pizza.price}
+                                    </span>
+                                    <div className="flex">
+                                        <div className='w-1/2 text-gray-700'>
+                                            <p>Size: {pizza.size}</p>
+                                        </div>
+                                        <div className="w-1/2">
+                                            <button onClick={() => handleAddToCart(pizza)} className="bg-black font-serif text-sm text-white py-2 px-4 border border-black rounded-md hover:bg-gray-500 transition-colors duration-300">
+                                                ADD TO CART
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-row">
-                            <div className="w-100 m-1">
-                                <h1 className='mt-1 '>Price: {pizza.price}</h1>
-                            </div>
-                            <div className="w-100 m-1">
-                                <button onClick={() => handleAddToCart(pizza)} className="bg-black text-white p-3 m-3 border-2">
-                                    ADD TO CART
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
-        <div className='flex '>
-            <div id='about' className="  items-center justify-center p-10 m-10">
-        <h1 className="text-3xl font-bold p-5 m-5">About Us</h1>
-        <p>Lorem ipsum dolor sit amr,</p>
-        <p>ispumln the iolrst oprmum sor dol yisnnsk</p>
-        <p>Lorem ipsum dolor sit amr,</p>
-        <p>ispumln the iolrst oprmum sor dol yisnnsk</p>
-      </div>
-      <div id='contact' className="flex flex-col items-center justify-center p-5 m-3">
-        <h1 className="text-3xl font-bold p-5 m-5">CONTACT US</h1>
-        <p>+46 738 123 234</p>
-      </div>
-      </div>
+            
             <Footer />
         </>
     );

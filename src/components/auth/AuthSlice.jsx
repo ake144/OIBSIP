@@ -38,8 +38,8 @@ export const signupAsync=createAsyncThunk('auth/signupAsync',async(cred)=>{
 
 export const loginAsync=createAsyncThunk('auth/loginAsync',async(cred)=>{
     const res=await login(cred)
-    localStorage.setItem('user',JSON.stringify(res))
-    return res
+    const result = localStorage.setItem('user',JSON.stringify(res))
+    return result
 })
 
 export const verifyOtpAsync=createAsyncThunk('auth/verifyOtpAsync',async(verificationCode)=>{
@@ -130,7 +130,7 @@ const authSlice=createSlice({
                 state.signupStatus='pending'
             })
             .addCase(signupAsync.fulfilled,(state,action)=>{
-                state.signupStatus='fullfilled'
+                state.signupStatus='fulfilled'
                 state.loggedInUser=action.payload
             })
             .addCase(signupAsync.rejected,(state,action)=>{
@@ -142,7 +142,7 @@ const authSlice=createSlice({
                 state.loginStatus='pending'
             })
             .addCase(loginAsync.fulfilled,(state,action)=>{
-                state.loginStatus='fullfilled'
+                state.loginStatus='fulfilled'
                 state.loggedInUser=action.payload
             })
             .addCase(loginAsync.rejected,(state,action)=>{
@@ -154,7 +154,7 @@ const authSlice=createSlice({
                 state.otpVerificationStatus='pending'
             })
             .addCase(verifyOtpAsync.fulfilled,(state,action)=>{
-                state.otpVerificationStatus='fullfilled'
+                state.otpVerificationStatus='fulfilled'
                 state.loggedInUser=action.payload
             })
             .addCase(verifyOtpAsync.rejected,(state,action)=>{
