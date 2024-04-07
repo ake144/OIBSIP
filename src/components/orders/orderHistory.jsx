@@ -2,14 +2,18 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOrderByUserIdAsync, resetOrderFetchStatus, selectOrderFetchStatus, selectOrders } from './orderSlice';
 import { toast } from 'react-toastify';
+import { selectLoggedInUser } from '../auth/AuthSlice';
 
-export const UserOrders = () => {
+const  UserOrders = () => {
   const dispatch = useDispatch();
   const orders = useSelector(selectOrders);
+  const user = useSelector(selectLoggedInUser)
   const orderFetchStatus = useSelector(selectOrderFetchStatus);
 
+  const id = user._id
+
   useEffect(() => {
-    dispatch(getOrderByUserIdAsync());
+    dispatch(getOrderByUserIdAsync(id));
   }, [dispatch]);
 
   useEffect(() => {
@@ -47,3 +51,5 @@ export const UserOrders = () => {
     </div>
   );
 };
+
+export default UserOrders;

@@ -6,7 +6,6 @@ import { HiArrowCircleLeft } from 'react-icons/hi';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
-  const userID = localStorage.getItem('userID');
 
   const fetchOrders = () => {
     fetch(`http://localhost:5000/api/orders/${userID}`)

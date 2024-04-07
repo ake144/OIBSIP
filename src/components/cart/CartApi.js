@@ -1,19 +1,17 @@
 import {axiosi} from './../config/axios'
 
-export const addToCart=async(userId,item)=>{
-    try{
-        const res = await axiosi.post(`/cart/${userId}`,item)
-        return res.data
+export const addToCart = async (userId, productId) => {
+    try {
+      const res = await axiosi.post(`/cart/${userId}`, productId); // Update the endpoint URL
+      return res.data;
+    } catch (error) {
+      throw error.response.data;
     }
-    catch(error){
-        throw error.response.data
-    }
-}
-
-export const fetchCartByUserId=async(id)=>{
+  };
+export const fetchCartByUserId=async(userId)=>{
     try{
         
-        const res = await axiosi.get(`/cart/${id}`)
+        const res = await axiosi.get(`/cart/${userId}`)
         return res.data
     }
     catch(error){
@@ -29,4 +27,13 @@ export const deleteCartByUserId=async(userId,itemName)=>{
     catch(error){
         throw error.response.data
     }
+}
+export const clearCart = async(userId)=>{
+    try {
+        const res = await axiosi.delete(`/cart/${userId}`)
+        return res.data
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+        throw error;
+      }
 }

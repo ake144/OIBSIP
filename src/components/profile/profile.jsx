@@ -1,21 +1,12 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import {useSelector, useDispatch} from 'react-redux'
+import { selectLoggedInUser } from '../auth/AuthSlice';
 
 function Profile() {
-  const [user, setUser] = useState(null);
-   const userId = localStorage.getItem('userID');
-   useEffect(() => {
-    axios
-     .get('http://localhost:3001/api/getuser/' + userId)
-     .then((res) => {
-        setUser(res.data);
-      })
-     .catch((err) => {
-        console.error(err);
-      });
-  }, []);
-
+ 
   
+  const user = useSelector(selectLoggedInUser)
   
 
   return (

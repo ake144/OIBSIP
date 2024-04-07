@@ -1,49 +1,45 @@
-
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { fetchCartByUserIdAsync, selectCartItems } from "./../cart/cartSlice";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect,useState } from "react";
-import { selectLoggedInUser } from "../auth/AuthSlice";
+import { fetchCartByUserIdAsync, selectCartItems } from "../cart/cartSlice";
+import {
+  selectLoggedInUser,
+  logoutAsync,
+  selectLogoutStatus
+} from "../auth/AuthSlice";
 
-export default function Navbar() {
+export default function Navbar({user}) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [cartItemsCount, setCartItemsCount] = useState(0);
 
-  const userId = localStorage.getItem("userID");
   const cartItems = useSelector(selectCartItems);
-  let user = JSON.parse(localStorage.getItem("user"));
-
+  const userId = user?._id
 
   useEffect(() => {
-    dispatch(fetchCartByUserIdAsync(userId));
-  }, [userId, dispatch]);
-
-  const handleSignupClick = () => {
-    navigate("/signup");
-  };
+    
+    if (userId) {
+      dispatch(fetchCartByUserIdAsync(userId));
+    }
+  }, [dispatch]);
 
   const handleLogOut = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("userID")
-    console.log('form the logout model')
-    user = null
-    navigate("/");
+    window.open("http://localhost:3001/auth/logout", "_self");
+    localStorage.setItem('user', JSON.stringify({ isLoggedIn: false }));
   };
-
-  const handleCart= ()=>{
-    navigate("/cart")
-  }
   
+
+  const handleCart = () => {
+    navigate("/cart");
+  };
 
   return (
     <div className="navbar bg-orange-100">
-      <div className="flex-1  m-1 p-0">
-        <a href="/">
-        <img src="/chef-pizza.png" className="mx-6 h-14 w-23 " alt="logo" />
-        </a>
-      </div>
+            <div className="flex-1  m-1 p-0">
+                <a href="/">
+              <img src="/chef-pizza.png" className="mx-6 h-14 w-23 " alt="logo" />
+              </a>
+            </div>
       <div className="flex-none">
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn   btn-ghost btn-circle">
@@ -71,7 +67,7 @@ export default function Navbar() {
             className="mt-3 z-[1] card card-compact dropdown-content w-52 bg-base-100 shadow"
           >
             <div className="card-body">
-              <span className="font-bold text-lg">{cartItems?.length > 0 ? cartItems?.length : 0 } Items</span>
+              {/* <span className="font-bold text-lg">{cartItems?.length > 0 ? cartItem?.length : 0 } Items</span> */}
               <span className="text-info">Subtotal: $$</span>
               <div className="card-actions">
                 <button className="btn btn-primary text-2xl btn-block"  onClick={handleCart}>View cart</button>
@@ -79,51 +75,56 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-        {user ? (
-          <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar"
-            >
-              <div className="w-10 rounded-full">
-                <img
-                  alt="Tailwind CSS Navbar component"
-                  src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-                />
-              </div>
+      
+      {user ? (
+        // If user is logged in
+        <div className="dropdown dropdown-end">
+          {/* Dropdown menu for user */}
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-circle avatar"
+          >
+            {/* User avatar */}
+            <div className="w-10 rounded-full">
+            <img
+            src={user.name}
+            alt="User Avatar"
+            />
+
             </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-            >
-              <li>
-                <Link to={"/profile"} className="justify-between">
-                  Profile
-                  <span className="badge">New</span>
-                </Link>
-              </li>
-              <li>
-                <a>Settings</a>
-              </li>
-              <li>
-                <button  onClick={handleLogOut}>
-                  Logout
-                </button>
-              </li>
-            </ul>
           </div>
-        ) : (
-          <div className="justify-center items-center text-black mx-5">
-            <button  className="hover:text-xl  hover:text-bg-slate-500 font-serif" onClick={handleSignupClick}>Sign Up</button>
-          </div>
-        )}
-      </div>
+          <ul
+            tabIndex={0}
+            className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+          >
+            {/* Dropdown menu items */}
+            <li>
+              <Link to={"/profile"} className="justify-between">
+                Profile
+                <span className="badge">New</span>
+              </Link>
+            </li>
+            <li>
+              <a>Settings</a>
+            </li>
+            <li>
+              <button onClick={handleLogOut}>Logout</button>
+            </li>
+          </ul>
+        </div>
+      ) : (
+        // If user is not logged in
+        <div className="justify-center items-center text-black mx-5">
+          <Link
+            className="hover:text-xl hover:text-bg-slate-500 font-serif"
+            to='/login'
+          >
+            Login
+          </Link>
+        </div>
+      )}
+    </div>
     </div>
   );
 }
-
-
-
-
-

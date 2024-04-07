@@ -1,7 +1,7 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginAsync, selectLoginStatus, selectLoginError } from './AuthSlice';
+import { loginAsync, selectLoginStatus, selectLoginError, clearLoginError } from './AuthSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -13,6 +13,12 @@ const Login = () => {
   const loginStatus = useSelector(selectLoginStatus);
   const loginError = useSelector(selectLoginError);
 
+  // Clear login error on component mount
+  useEffect(() => {
+    return () => {
+      dispatch(clearLoginError());
+    };
+  }, [dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,20 +27,14 @@ const Login = () => {
   };
 
   // Handle login status change
-useEffect(() => {
-  console.log("Login Status Changed:", loginStatus);
+  useEffect(() => {
     if (loginStatus === 'fulfilled') {
-      toast.success('successful logged in, Welcome To AkejaPizza');
-      console.log("Redirecting to home page...");
-      // Redirect to protected route upon successful login
+      toast.success('Successfully logged in. Welcome to AkejaPizza!');
       navigate('/');
+    } else if (loginStatus === 'rejected') {
+      toast.error(loginError || 'Wrong email or password. Please try again.');
     }
-    else if (loginStatus === 'rejected'){
-      toast.error('Wrong Password or Email, Please try again')
-    }
-    
-  }, [loginStatus, navigate]);
-
+  }, [loginStatus, loginError, navigate]);
 
   const handleForgot = () => {
     navigate('/forgotpassword');
@@ -42,7 +42,7 @@ useEffect(() => {
 
   return (
     <>
-    <ToastContainer/>
+      <ToastContainer />
       <div className="flex flex-col justify-center items-center">
         <form className="" onSubmit={handleSubmit}>
           <label htmlFor="email">Email:</label>
@@ -51,21 +51,15 @@ useEffect(() => {
           <label htmlFor="password">Password:</label>
           <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-          <button
-            className="bg-black text-white p-3 m-4 border-1"
-            type="submit"
-            disabled={loginStatus === 'pending'}
-          >
+          <button className="bg-black text-white p-3 m-4 border-1" type="submit" disabled={loginStatus === 'pending'}>
             {loginStatus === 'pending' ? 'Logging In...' : 'Login'}
           </button>
         </form>
-        {loginError && (
-            <div className="justify-center items-center">
-              <button className="bg-black text-white p-3 m-4 border-1" onClick={handleForgot}>
-                forgotPassword
-              </button>
-            </div>
-          )}
+        <div className="justify-center items-center">
+          <button className="bg-black text-white p-3 m-4 border-1" onClick={handleForgot}>
+            Forgot Password
+          </button>
+        </div>
         <div className="item-center justify-center flex flex-col p-4 m-4 w-1/4">
           <p className="p-5 m-">Don't have an account?</p>
           <button className="" onClick={() => navigate('/signup')}>
